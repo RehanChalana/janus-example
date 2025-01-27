@@ -6,6 +6,9 @@ import adapter from 'webrtc-adapter';
 
 const App = () => {
 
+    const turnServerUsername = import.meta.env.VITE_TURN_SERVER_USERNAME
+    const turnServerPassword = import.meta.env.VITE_TURN_SERVER_PASSWORD
+
     const [localStream, setLocalStream] = useState(null)
     const [remoteStreams, setRemoteStreams] = useState(new Map())
     const [isConnected, setIsConnected] = useState(false)
@@ -24,6 +27,39 @@ const App = () => {
                 callback: () => {
                     janus.current = new Janus({
                         server: "ws://send-acceptable.gl.at.ply.gg:20407",
+                        iceServers: [
+                            { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun.l.google.com:5349" },
+      { urls: "stun:stun1.l.google.com:3478" },
+      { urls: "stun:stun1.l.google.com:5349" },
+      { urls: "stun:stun2.l.google.com:19302" },
+      { urls: "stun:stun2.l.google.com:5349" },
+      { urls: "stun:stun3.l.google.com:3478" },
+      { urls: "stun:stun3.l.google.com:5349" },
+      { urls: "stun:stun4.l.google.com:19302" },
+      { urls: "stun:stun4.l.google.com:5349" },
+      {urls: "stun:stun.relay.metered.ca:80"},
+      {
+        urls: "turn:global.relay.metered.ca:80",
+        username: turnServerUsername,
+        credential: turnServerPassword,
+      },
+      {
+        urls: "turn:global.relay.metered.ca:80?transport=tcp",
+        username: turnServerUsername,
+        credential: turnServerPassword,
+      },
+      {
+        urls: "turn:global.relay.metered.ca:443",
+        username: turnServerUsername,
+        credential: turnServerPassword,
+      },
+      {
+        urls: "turns:global.relay.metered.ca:443?transport=tcp",
+        username: turnServerUsername,
+        credential: turnServerPassword,
+      },
+                        ],
                         success: () => { joinAsPublisher() },
                         error: () => console.error("Janus initialization error: ",error)
                     })
