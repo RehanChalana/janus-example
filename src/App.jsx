@@ -9,6 +9,7 @@ const App = () => {
     const [localStream, setLocalStream] = useState(null)
     const [remoteStreams, setRemoteStreams] = useState(new Map())
     const [isConnected, setIsConnected] = useState(false)
+    const [subscriptions, setSubscriptions] = useState([])
 
     const janus = useRef(null)
     const pubHandleRef = useRef(null)
@@ -88,9 +89,10 @@ const App = () => {
                         // calling to start connection to subscribe
                         joinAsSubscriber(msg.publishers)
                     }
-
-                    if(jsep) {
+                    else if(jsep) {
                         pubHandleRef.current.handleRemoteJsep({jsep : jsep})
+                    } else if(msg.publishers) {
+                        handleNewPublishers(msg.publishers)
                     }
 
 
@@ -102,9 +104,15 @@ const App = () => {
 
     const joinAsSubscriber = (publishers) => {
 
-        const streams = publishers.map((pub) => (
-            {feed : pub.id}
-        ))
+        console.log(publishers)
+
+        const newSubscriptions = []
+        const streams = publishers.map((pub) => {
+            newSubscriptions.push(pub.id)
+           return ( {feed : pub.id})
+        })
+
+        setSubscriptions(newSubscriptions)
 
         janus.current.attach({
             plugin : "janus.plugin.videoroom",
@@ -176,6 +184,24 @@ const App = () => {
                 }
             }
 
+        })
+    }
+
+    const handleNewPublishers = (publishers) => {
+        const newSubscriptions = [...subscriptions]
+        const streams = publishers.map((pub) => {
+            newSubscriptions.push(pub.id)
+           return ( {feed : pub.id})
+        })
+        setSubscriptions(newSubscriptions)
+
+        subHandleRef.current.send({
+                message : {
+                    request: "join",
+                    ptype : "subscriber",
+                    room: 1234,
+                    streams
+                }  
         })
     }
 
